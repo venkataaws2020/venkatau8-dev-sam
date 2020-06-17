@@ -15,7 +15,7 @@ Resources:
   hello:
     Type: 'AWS::Serverless::Function'
     Properties:
-      Handler: handler.hello
+      Handler: app.lambdaHandler
       Runtime: nodejs10.x
       CodeUri: /
       Policies:
