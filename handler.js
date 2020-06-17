@@ -1,69 +1,34 @@
-'use strict';
+// const axios = require('axios')
+// const url = 'http://checkip.amazonaws.com/';
+let response;
 
-const databaseManager = require('./databaseManager');
-const uuidv1 = require('uuid/v1');
+/**
+ *
+ * Event doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
+ * @param {Object} event - API Gateway Lambda Proxy Input Format
+ *
+ * Context doc: https://docs.aws.amazon.com/lambda/latest/dg/nodejs-prog-model-context.html
+ * @param {Object} context
+ *
+ * Return doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html
+ * @returns {Object} object - API Gateway Lambda Proxy Output Format
+ *
+ */
+exports.lambdaHandler = async (event, context) => {
+    try {
+        // const ret = await axios(url);
+        response = {
+            'statusCode': 200,
+            'body': JSON.stringify({
+                message: 'hello world',
+                // location: ret.data.trim()
+            })
+        }
+    } catch (err) {
+        console.log(err);
+        return err;
+    }
 
-exports.hello = async (event) => {
-	console.log(event);
-
-	switch (event.httpMethod) {
-		case 'DELETE':
-			return deleteItem(event);
-		case 'GET':
-			return getItem(event);
-		case 'POST':
-			return saveItem(event);
-		case 'PUT':
-			return updateItem(event);
-		default:
-			return sendResponse(404, `Unsupported method "${event.httpMethod}"`);
-	}
+    return response
 };
 
-function saveItem(event) {
-	const item = JSON.parse(event.body);
-	item.itemId = uuidv1();
-
-	return databaseManager.saveItem(item).then(response => {
-		console.log(response);
-		return sendResponse(200, item.itemId);
-	});
-}
-
-function getItem(event) {
-	const itemId = event.pathParameters.itemId;
-
-	return databaseManager.getItem(itemId).then(response => {
-		console.log(response);
-		return sendResponse(200, JSON.stringify(response));
-	});
-}
-
-function deleteItem(event) {
-	const itemId = event.pathParameters.itemId;
-
-	return databaseManager.deleteItem(itemId).then(response => {
-		return sendResponse(200, 'DELETE ITEM');
-	});
-}
-
-function updateItem(event) {
-	const itemId = event.pathParameters.itemId;
-
-	const body = JSON.parse(event.body);
-	const paramName = body.paramName;
-	const paramValue = body.paramValue;
-
-	return databaseManager.updateItem(itemId, paramName, paramValue).then(response => {
-		console.log(response);
-		return sendResponse(200, JSON.stringify(response));
-	});
-}
-
-function sendResponse(statusCode, message) {
-	const response = {
-		statusCode: statusCode,
-		body: JSON.stringify(message)
-	};
-	return response
-}
